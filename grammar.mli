@@ -13,6 +13,8 @@ type t = {
     nonterms: var Hset.t
   }
 
+val show_symbol : symbol -> string
+
 (** create an empty grammar *)
 val create : unit -> t
 

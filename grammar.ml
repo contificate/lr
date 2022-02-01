@@ -5,6 +5,9 @@ type symbol =
   | Terminal of var
   | NonTerminal of var
 
+let show_symbol = function
+  | Terminal t | NonTerminal t -> t
+
 module Htbl = Hashtbl
 module Hset = Hashset
 
