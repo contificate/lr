@@ -156,11 +156,9 @@ module ED =
 module IM =
   Map.Make(Int)
 
-(* TODO: clean this up *)
 let items g ((s',_,_,_) as from) =
-  (* number new states as they're created *)
   let number = let c = ref (-1) in fun () -> incr c; !c in
-  let c : IS.t Hset.t = Hset.create 100 in
+  let c : IS.t Hset.t = Hset.create 50 in
   let names : int IM.t ref = ref IM.empty in
   let initial = closure g (IS.singleton from) in
   Hset.add c initial;
@@ -220,7 +218,6 @@ let table (g : G.t) ((start, _,_,_) as from) : _ =
     IM.find st names
   in
   let () =
-    (* combine conflicting actions *)
     let conflict p act =
       match Htbl.find_opt action p with
       | Some act' ->
@@ -228,12 +225,11 @@ let table (g : G.t) ((start, _,_,_) as from) : _ =
       | _ -> Htbl.add action p act
     in
     let shift (i, s) j =
-      let i, j = id i, id j in
       (match s with
        | G.Terminal a ->
-          Htbl.add action (id i, a) (Shift j)
+          Htbl.add action (id i, a) (Shift (id j))
        | G.NonTerminal a ->
-          Htbl.add goto (i, a) j)
+          Htbl.add goto (id i, a) (id j))
     in
     let reduce st (i : item) =
       match i with
