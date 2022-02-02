@@ -19,7 +19,7 @@ let () =
 let (>>) f g x = g (f x)
 
 let () =
-  let (items, transitions) =
+  let (items, transitions, names) =
     Lr.items g
       ("S", [|nt "E"|], 0, "$")
   in
@@ -29,13 +29,23 @@ let () =
       String.concat "\\n"
         (List.map Lr.show_item (Lr.IS.elements i))
     in
-    Printf.printf "%d [label=\"%s\"];\n" h lbl
+    Printf.printf "%d [label=\"%d:\\n%s\"];\n" h (Lr.IM.find h names) lbl
   in
   let print_edge (n, s) n' =
     let s = G.show_symbol s in
     Printf.printf "%d -> %d [label=\"%s\"];\n" n n' s
   in
   Lr.ISS.iter print_node items;
-  Lr.ED.iter print_edge !transitions;
+  Lr.ED.iter print_edge transitions;
   print_endline "}"
+
+let () =
+  let tbl =
+    Lr.table g
+      ("S", [|nt "E"|], 0, "$")
+  in
+  Hashtbl.iter (fun (i, x) a -> Printf.printf "action[%d, %s] = %s\n" i x (Lr.show_action a)) tbl.action;
+  Hashtbl.iter (fun (i, x) a -> Printf.printf "goto[%d, %s] = %d\n" i x a) tbl.goto;
+
+  
   

@@ -153,9 +153,18 @@ module ED =
       let compare = compare
     end)
 
+module IM =
+  Map.Make(Int)
+
+(* TODO: clean this up *)
 let items g ((s',_,_,_) as from) =
-  let c : IS.t Hset.t = Hset.create 50 in
-  Hset.add c (closure g (IS.singleton from));
+  (* number new states as they're created *)
+  let number = let c = ref (-1) in fun () -> incr c; !c in
+  let c : IS.t Hset.t = Hset.create 100 in
+  let names : int IM.t ref = ref IM.empty in
+  let initial = closure g (IS.singleton from) in
+  Hset.add c initial;
+  names := IM.add (Htbl.hash initial) (number ()) !names;
   let symbols = G.NonTerminal s' :: G.symbols g in
   let transitions : int ED.t ref = ref ED.empty in
   let changing = ref true in
@@ -169,14 +178,74 @@ let items g ((s',_,_,_) as from) =
           transitions :=
             ED.add (Htbl.hash i, x) (Htbl.hash next) !transitions;
         if not (Hset.mem c next || empty) then
-          Hset.add c next;
+          begin
+            Hset.add c next;
+            names := IM.add (Htbl.hash next) (number ()) !names
+          end
       in
       List.iter each_symbol symbols
     in
     Hset.iter each_set c;
     changing := Hset.cardinal c > prev
   done;
-  (Hset.fold (fun i -> ISS.add (i, Htbl.hash i)) c ISS.empty, transitions)
+  (Hset.fold
+     (fun i -> ISS.add (i, Htbl.hash i)) c ISS.empty, !transitions, !names)
+
+type action =
+  | Accept
+  | Shift of int
+  | Reduce of var * G.symbol array
+  | Conflict of action * action
+
+let rec show_action = function
+  | Accept -> "accept"
+  | Shift i -> "s" ^ string_of_int i
+  | Reduce (x, ys) ->
+     let ys = String.concat " " (Array.to_list (Array.map G.show_symbol ys)) in
+     Printf.sprintf "r(%s -> %s)" x ys
+  | Conflict (a, a') ->
+     let a, a' = show_action a, show_action a' in
+     Printf.sprintf "(%s/%s)?" a a'
+
+type tbl = {
+    action: (int * string, action) Hashtbl.t;
+    goto: (int * string, int) Hashtbl.t;
+  }
+
+let table (g : G.t) ((start, _,_,_) as from) : _ =
+  let (iss, edges, names) = items g from in
+  let action : (int * string, action) Htbl.t = Htbl.create 30 in
+  let goto : (int * var, int) Htbl.t = Htbl.create 30 in
+  let id st =
+    IM.find st names
+  in
+  let () =
+    (* combine conflicting actions *)
+    let conflict p act =
+      match Htbl.find_opt action p with
+      | Some act' ->
+         Htbl.replace action p (Conflict (act', act))
+      | _ -> Htbl.add action p act
+    in
+    let shift (i, s) j =
+      let i, j = id i, id j in
+      (match s with
+       | G.Terminal a ->
+          Htbl.add action (id i, a) (Shift j)
+       | G.NonTerminal a ->
+          Htbl.add goto (i, a) j)
+    in
+    let reduce st (i : item) =
+      match i with
+      | (x, ys, i, k) when i >= Array.length ys ->
+         conflict (st, k)
+           (if x = start then Accept else Reduce (x, ys))
+      | _ -> ()
+    in
+    ED.iter shift edges;
+    ISS.iter (fun (i, h) -> IS.iter (reduce (id h)) i) iss;
+  in
+  { action = action; goto = goto }
 
 let show_item (x, ys, i, k) =
   let ys = Array.map G.show_symbol ys in
@@ -187,7 +256,7 @@ let show_item (x, ys, i, k) =
   let ys =
     String.concat " " ys
   in
-  Printf.sprintf "[%s -> %s, %s]" x ys k
+  Printf.sprintf "[%s → %s, %s]" x ys k
 
 let (>>) f g x = g (f x)
 
