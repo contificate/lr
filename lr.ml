@@ -16,6 +16,27 @@ module Hset = Hashset
 module SS = Set.Make(String)
 module SM = Map.Make(String)
 
+let (>>) f g x = g (f x)
+
+let show_item (x, ys, i, k) =
+  let ys = Array.map G.show_symbol ys in
+  let ys =
+    List.init (Array.length ys + 1)
+      (fun i' -> if i = i' then "." else if i' > i then ys.(i'-1) else ys.(i'))
+  in
+  let ys =
+    String.concat " " ys
+  in
+  Printf.sprintf "[%s → %s, %s]" x ys k
+
+let show_item_set =
+  IS.elements
+  >> List.map show_item
+  >> String.concat "\n"
+
+let item_hash =
+  show_item_set >> Hashtbl.hash
+
 let nullable g =
   let null = Hset.create 30 in
   (* collect base case, X → ε *)
@@ -162,7 +183,7 @@ let items g ((s',_,_,_) as from) =
   let names : int IM.t ref = ref IM.empty in
   let initial = closure g (IS.singleton from) in
   Hset.add c initial;
-  names := IM.add (Htbl.hash initial) (number ()) !names;
+  names := IM.add (item_hash initial) (number ()) !names;
   let symbols = G.NonTerminal s' :: G.symbols g in
   let transitions : int ED.t ref = ref ED.empty in
   let changing = ref true in
@@ -174,11 +195,15 @@ let items g ((s',_,_,_) as from) =
         let empty = IS.is_empty next in
         if not empty then
           transitions :=
-            ED.add (Htbl.hash i, x) (Htbl.hash next) !transitions;
+            ED.add (item_hash i, x) (item_hash next) !transitions;
         if not (Hset.mem c next || empty) then
           begin
+            (* Printf.printf "collecting -%s-> ?\n" (G.show_symbol x); *)
             Hset.add c next;
-            names := IM.add (Htbl.hash next) (number ()) !names
+            Printf.printf "moving on %s => %d\n" (G.show_symbol x) (item_hash next);
+            print_endline (show_item_set next);
+            Printf.printf "already contains %s? = %b\n" (G.show_symbol x) (IM.mem (item_hash next) !names);
+            names := IM.add (item_hash next) (number ()) !names
           end
       in
       List.iter each_symbol symbols
@@ -186,8 +211,13 @@ let items g ((s',_,_,_) as from) =
     Hset.iter each_set c;
     changing := Hset.cardinal c > prev
   done;
+  Hset.iter (fun i ->
+      print_endline "======";
+      print_endline @@ show_item_set i;
+      print_endline "======"
+    ) c;
   (Hset.fold
-     (fun i -> ISS.add (i, Htbl.hash i)) c ISS.empty, !transitions, !names)
+     (fun i -> ISS.add (i, item_hash i)) c ISS.empty, !transitions, !names)
 
 type action =
   | Accept
@@ -206,6 +236,9 @@ let rec show_action = function
      Printf.sprintf "(%s/%s)?" a a'
 
 type tbl = {
+    items: ISS.t;
+    edges: int ED.t;
+    names: int IM.t;
     action: (int * string, action) Hashtbl.t;
     goto: (int * string, int) Hashtbl.t;
   }
@@ -241,22 +274,7 @@ let table (g : G.t) ((start, _,_,_) as from) : _ =
     ED.iter shift edges;
     ISS.iter (fun (i, h) -> IS.iter (reduce (id h)) i) iss;
   in
-  { action = action; goto = goto }
+  let iss = ISS.map (fun (i, h) -> (i, id h)) iss in
+  { items = iss; action; goto; edges; names }
 
-let show_item (x, ys, i, k) =
-  let ys = Array.map G.show_symbol ys in
-  let ys =
-    List.init (Array.length ys + 1)
-      (fun i' -> if i = i' then "." else if i' > i then ys.(i'-1) else ys.(i'))
-  in
-  let ys =
-    String.concat " " ys
-  in
-  Printf.sprintf "[%s → %s, %s]" x ys k
 
-let (>>) f g x = g (f x)
-
-let show_item_set =
-  IS.elements
-  >> List.map show_item
-  >> String.concat "\n"

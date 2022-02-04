@@ -1,4 +1,11 @@
 
 (executable
   (name main)
-  (libraries hashset))
+  (modes js)
+  (libraries js_of_ocaml hashset yojson ppx_deriving_yojson.runtime)
+  (preprocess (pps js_of_ocaml-ppx ppx_deriving_yojson)))
+
+(menhir
+  (modules parser))
+
+(ocamllex lexer)
