@@ -34,6 +34,11 @@ let show_item_set =
   >> List.map show_item
   >> String.concat "\n"
 
+(** 
+  when in Rome..
+  OCaml has too many collisions for a polymorphic hash 
+  on the actual set
+*)
 let item_hash =
   show_item_set >> Hashtbl.hash
 
@@ -211,11 +216,6 @@ let items g ((s',_,_,_) as from) =
     Hset.iter each_set c;
     changing := Hset.cardinal c > prev
   done;
-  Hset.iter (fun i ->
-      print_endline "======";
-      print_endline @@ show_item_set i;
-      print_endline "======"
-    ) c;
   (Hset.fold
      (fun i -> ISS.add (i, item_hash i)) c ISS.empty, !transitions, !names)
 
