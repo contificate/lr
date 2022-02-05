@@ -22,7 +22,10 @@ let show_item (x, ys, i, k) =
   let ys = Array.map G.show_symbol ys in
   let ys =
     List.init (Array.length ys + 1)
-      (fun i' -> if i = i' then "." else if i' > i then ys.(i'-1) else ys.(i'))
+      (fun i' ->
+        if i = i' then "."
+        else if i' > i
+        then ys.(i'-1) else ys.(i'))
   in
   let ys =
     String.concat " " ys
@@ -35,9 +38,9 @@ let show_item_set =
   >> String.concat "\n"
 
 (** 
-  when in Rome..
-  OCaml has too many collisions for a polymorphic hash 
-  on the actual set
+  OCaml's murmur3 hash has too many collisions for a polymorphic hash 
+  on the actual set, so hashing is performed on the string representation
+  of the set's contents.
 *)
 let item_hash =
   show_item_set >> Hashtbl.hash
@@ -74,7 +77,7 @@ let compute_nullable (g : G.t) =
       SS.mem x null
    | _ -> false)
 
-let first (g : G.t) : SS.t SM.t =
+let first g : SS.t SM.t =
   let map = ref SM.empty in
   let nullable = compute_nullable g in
   let first = function
@@ -187,8 +190,9 @@ let items g ((s',_,_,_) as from) =
   let c : IS.t Hset.t = Hset.create 50 in
   let names : int IM.t ref = ref IM.empty in
   let initial = closure g (IS.singleton from) in
+  let hash = item_hash in
   Hset.add c initial;
-  names := IM.add (item_hash initial) (number ()) !names;
+  names := IM.add (hash initial) (number ()) !names;
   let symbols = G.NonTerminal s' :: G.symbols g in
   let transitions : int ED.t ref = ref ED.empty in
   let changing = ref true in
@@ -200,15 +204,11 @@ let items g ((s',_,_,_) as from) =
         let empty = IS.is_empty next in
         if not empty then
           transitions :=
-            ED.add (item_hash i, x) (item_hash next) !transitions;
+            ED.add (hash i, x) (hash next) !transitions;
         if not (Hset.mem c next || empty) then
           begin
-            (* Printf.printf "collecting -%s-> ?\n" (G.show_symbol x); *)
             Hset.add c next;
-            Printf.printf "moving on %s => %d\n" (G.show_symbol x) (item_hash next);
-            print_endline (show_item_set next);
-            Printf.printf "already contains %s? = %b\n" (G.show_symbol x) (IM.mem (item_hash next) !names);
-            names := IM.add (item_hash next) (number ()) !names
+            names := IM.add (hash next) (number ()) !names
           end
       in
       List.iter each_symbol symbols
@@ -217,7 +217,7 @@ let items g ((s',_,_,_) as from) =
     changing := Hset.cardinal c > prev
   done;
   (Hset.fold
-     (fun i -> ISS.add (i, item_hash i)) c ISS.empty, !transitions, !names)
+     (fun i -> ISS.add (i, hash i)) c ISS.empty, !transitions, !names)
 
 type action =
   | Accept
@@ -247,9 +247,7 @@ let table (g : G.t) ((start, _,_,_) as from) : _ =
   let (iss, edges, names) = items g from in
   let action : (int * string, action) Htbl.t = Htbl.create 30 in
   let goto : (int * var, int) Htbl.t = Htbl.create 30 in
-  let id st =
-    IM.find st names
-  in
+  let id st = IM.find st names in
   let () =
     let conflict p act =
       match Htbl.find_opt action p with
@@ -276,5 +274,4 @@ let table (g : G.t) ((start, _,_,_) as from) : _ =
   in
   let iss = ISS.map (fun (i, h) -> (i, id h)) iss in
   { items = iss; action; goto; edges; names }
-
 
