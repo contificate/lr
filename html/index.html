@@ -1,0 +1,76 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8"/>
+    <title>LR(1)</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/split.js/1.6.2/split.min.js" integrity="sha512-to2k78YjoNUq8+hnJS8AwFg/nrLRFLdYYalb18SlcsFRXavCOTfBF3lNyplKkLJeB8YjKVTb1FPHGSy9sXfSdg==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+    <script src="../_build/default/main.bc.runtime.js"></script>
+    <script src="../_build/default/main.bc.js"></script>
+    <link rel="stylesheet" href="main.css" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" integrity="sha512-Fo3rlrZj/k7ujTnHg4CGR2D7kSs0v4LLanw2qksYuRlEzO+tcaEPQogQ0KaoGN26/zrn20ImR1DfuLWnOo7aBA==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/svg.js/3.1.2/svg.min.js" integrity="sha512-I+rKw3hArzZIHzrkdELbKqrXfkSvw/h0lW/GgB8FThaBVz2e5ZUlSW8kY8v3q6wq37eybIwyufkEZxe4qSlGcg==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/svg.pan-zoom.js/2.3.0/svg.pan-zoom.js" integrity="sha512-wjhvNZjqmm94Z6STaCs5ONZHZBo4yvy39dH+5MdV4hHL8UmBc/WQDFKcyLzZeK/eyP4MQ+0/Goak/2Ciyh/OeA==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+    <script src="https://bumbu.me/svg-pan-zoom/dist/svg-pan-zoom.js"></script>
+  </head>
+  <body>
+    
+    <div id="container">
+
+      <div class="split" id="left">
+	<div class="title">
+	  Grammar
+	  <button onclick="parseGrammar()"><i class="fas fa-arrow-right"></i></button>
+	</div>
+	<div class="content">
+	  <div class="grammar">
+	    <textarea placeholder="S -> E" id="grammar">
+S -> E.
+E -> i.
+E -> j.
+E -> E + E.
+	    </textarea>
+	  </div>
+	</div>
+      </div>
+      <div class="split" id="middle">
+	<div class="split" id="mid-1">
+	  <div class="title">Automaton</div>
+	  <div id="automaton"></div>
+	</div>
+	<div class="split" id="mid-2">
+	  <div class="content">
+	    <div id="table">
+	      <table id="tbl">
+		<tr>
+		  <th colspan="1">#</th>
+		  <th colspan="1">ACTION</th>
+		  <th colspan="1">GOTO</th>
+		</tr>
+	      </table>
+	    </div>
+
+	  </div>
+	  
+	</div>
+      </div>
+      <div class="split" id="right">	
+	<div class="title">
+	  Parse Tree
+	  <button onclick="parseInput()"><i class="fas fa-sync-alt"></i></button>
+	</div>
+	<div class="banner">
+	  <input id="src" type="text" placeholder="Input string" value="i + i + j"></input>
+	</div>
+	<div id="tree">
+	</div>
+      </div>
+    </div> 
+    
+  </body>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/viz.js/2.1.2/viz.js" integrity="sha512-vnRdmX8ZxbU+IhA2gLhZqXkX1neJISG10xy0iP0WauuClu3AIMknxyDjYHEpEhi8fTZPyOCWgqUCnEafDB/jVQ==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/viz.js/2.1.2/full.render.js" integrity="sha512-1zKK2bG3QY2JaUPpfHZDUMe3dwBwFdCDwXQ01GrKSd+/l0hqPbF+aak66zYPUZtn+o2JYi1mjXAqy5mW04v3iA==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+  <script src="app.js"></script>
+  
+</script>
+</html>

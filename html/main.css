@@ -1,0 +1,199 @@
+@import url('https://fonts.googleapis.com/css2?family=Source+Sans+Pro:ital,wght@0,200;0,300;0,400;1,200;1,300&display=swap');
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+html, body {
+    height: 100%;
+}
+
+#automaton {
+    width: 100%;
+    height: 100%;
+    padding: 10px;
+}
+
+#automaton svg {
+    height: inherit;
+    max-width: 100%;
+    width: 100%;
+}
+
+body {
+    background: #eee;
+    padding: 10px;
+    height: 100%;
+    font-family: 'Source Sans Pro', sans-serif;
+}
+
+#container {
+    margin: 0 auto;
+    display: flex;
+    flex-direction: row;
+    height:100%;
+}
+
+.split {
+    background: #f9f9f9;
+    height: 100%;
+    border: 1px solid #ccc;
+    display: flex;
+    flex-direction: column;
+}
+
+.grammar {
+    width: 100%;
+    height: 100%;
+    padding: 10px;
+    flex: 1;
+}
+
+.content {
+    /* background: pink; */
+    overflow-y: scroll;
+    flex: 1;
+}
+
+#grammar {
+    width: 100%;
+    border: 1px solid #ccc;
+    padding: 0.5em;
+    resize: none;
+    /* flex: 1; */
+    /* flex-grow: 1; */
+    /* display: flex; */
+    /* flex-direction: column; */
+    height: 100%;
+}
+
+#middle {
+    border: 0;
+}
+
+.split [id^="mid"] {
+}
+
+#table {
+    width: 100%;
+    height: 100%;
+    flex: 1;
+    max-height: 100%;
+}
+
+::-webkit-scrollbar {
+    display: none;
+}
+
+* {
+    -ms-overflow-style: none;  /* IE and Edge */
+    scrollbar-width: none;  /* Firefox */
+}
+
+#table > table {
+    width: 100%;
+    border-collapse: collapse;
+    color: #333;
+}
+
+#table td, th {
+    border: 1px solid #ddd;
+    text-align: center;
+}
+
+#table > th {
+    font-weight: lighter;
+}
+
+#table tr:nth-child(odd) {background: #f2f2f2;} 
+#table tr:nth-child(1) th {
+    background: #eee;
+    padding: 0.6em;
+    font-weight: 400;
+} 
+
+#table tr:nth-child(1) td { padding: 1em; }
+#table tr:nth-child(2) td { padding: 1em; }
+
+#table tr:nth-child(2) th {
+    font-weight: 400;
+    padding: 0.6em;
+    background: #eee;
+}
+
+#table td {
+    padding: 0.4em;
+    font-weight: 0.4em;
+    font-size: 0.9em;
+}
+
+.alt label {
+    padding: 0 10px;
+}
+
+.gutter {
+    background-color: #eee;
+    background-repeat: no-repeat;
+    background-position: 50%;
+}
+
+.split > .title {
+    display: block;
+    background: #eee;
+    border-bottom: 1px solid #ccc;
+    padding: 0.4em;
+    font-size: 0.9em;
+    color: #333;
+    
+}
+
+.banner {
+    display: block;
+    background: #eee;
+    border-bottom: 1px solid #ccc;
+    padding: 0.4em;
+}
+
+.banner > input {
+    width: 100%;
+    font-size: 1.2em;
+    border: 1px solid #ccc;
+    padding: 0.5em;
+}
+
+.gutter.gutter-horizontal {
+    background-image: url('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAUAAAAeCAYAAADkftS9AAAAIklEQVQoU2M4c+bMfxAGAgYYmwGrIIiDjrELjpo5aiZeMwF+yNnOs5KSvgAAAABJRU5ErkJggg==');
+    cursor: col-resize;
+} 
+
+.gutter.gutter-vertical {
+    background-image: url('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAUAAAAeCAYAAADkftS9AAAAIklEQVQoU2M4c+bMfxAGAgYYmwGrIIiDjrELjpo5aiZeMwF+yNnOs5KSvgAAAABJRU5ErkJggg==');
+    cursor: col-resize;
+} 
+
+.title button {
+    float:right;
+    padding: 0 1em;
+    color: #333;
+    border: 0;
+    border-radius: 0;
+    background: #fff;
+    border: 1px solid #ccc;
+}
+
+.title button:active {
+    background: #ccc;
+}
+
+#tree {
+    padding: 1em;
+    overflow-y: scroll;
+    height: 100%;
+}
+
+#tree svg {
+    width: 100%;
+    height: 100%;
+}
